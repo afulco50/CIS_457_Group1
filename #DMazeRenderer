@@ -1,0 +1,142 @@
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>3D Cube</title>
+</head>
+<body>
+
+    <script type="module">
+        //imports Three.js
+        import * as THREE from 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.module.js';
+
+        // Global 3D Variables for add scene, camera, renderer, and world light functions
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(150, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer();
+
+        //resize canvas of maze generator to dynamically match broswer window size
+        window.addEventListener('resize', () => {
+          renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // Global Variables - cube or geometric object
+        const geometry = new THREE.BoxGeometry(2, 2, 1);
+        const material = new THREE.MeshPhongMaterial({color: 'purple'});
+        const cube = new THREE.Mesh(geometry, material);
+
+        // Main function
+        function main() 
+        {
+            // remove the default canvas on web page (output)
+            //document.querySelector('canvas').remove();
+
+            const maze = 
+            [
+              [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+              [1, 1, 0, 1, 0, 1, 0, 1, 0, 1],
+              [1, 0, 0, 0, 1, 0, 0, 0, 0, 1],
+              [1, 1, 0, 1, 0, 1, 0, 1, 0, 1],
+              [1, 0, 0, 0, 1, 1, 0, 0, 1, 1],
+              [1, 1, 0, 0, 0, 0, 0, 1, 0, 1],
+              [1, 0, 1, 0, 1, 0, 1, 0, 1, 1],
+              [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+              [1, 0, 1, 0, 1, 0, 1, 0, 0, 1],
+              [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+            ];
+
+
+
+
+            //adds eventListener to arrow keys to allow player 
+            document.addEventListener('keydown', onKeyDown);
+            const playerLocation = new THREE.Vector3();
+
+            //adjust the playerLocation vector according to the arrow keys being clicked
+            function onKeyDown(event) 
+            {
+              switch (event.key) 
+              {
+                case 'ArrowUp':
+                  playerLocation.y += 0.1;
+                  console.log("Up")
+                  break;
+                case 'ArrowDown':
+                  playerLocation.y -= 0.1;
+                  console.log("Down")
+                  break;
+                case 'ArrowLeft':
+                  playerLocation.x -= 0.1;
+                  console.log("Left")
+                  break;
+                case 'ArrowRight':
+                  playerLocation.x += 0.1;
+                  console.log("Right")
+                  break;
+              }
+            }
+
+            function render() 
+            {
+                requestAnimationFrame(render);
+
+                // Update camera position based on velocity
+                camera.position.add(playerLocation);
+
+                renderer.render(scene, camera);
+              }
+
+
+            // add scene background color, set rendering size,
+            // and add to DOM on web page (output)
+            scene.background = new THREE.Color('#161718');
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+
+            // reposition or transform camera
+            //camera.position.set(0, 0, 5);
+            camera.position.set(5, 7, 7);
+
+            // create world light and add to scene
+            const light = new THREE.HemisphereLight('#FFFFFF', '#757575', 1.7);
+            scene.add(light);
+
+            //sets inital coords for maze generation
+            const numColumns = maze[0].length;
+            var xcoord = -numColumns + 8;
+
+            //iterates over 2D array to generate initial maze layout
+            for (let i = 0; i < maze.length; i++) 
+            {
+                //iterates through all items in that column and generates cubes where needed
+                for (let j = 0; j < maze[i].length; j++) 
+                {
+                    //maze block detected
+                    if (maze[i][j] === 1) 
+                    {
+                        //create a cube at the given indices coordinates
+                        const cube = new THREE.Mesh(geometry, material);
+                        cube.position.set(xcoord, j * 2, 0);
+                        scene.add(cube);
+
+                        console.log(`Cube placed at (${xcoord}, 0, ${j*2})`);
+                    }
+                }
+
+                //increments xcoord 2 units (moving right)
+                xcoord += 2;
+            }
+
+            // set initial cube position, rotation, and add to scene
+            cube.position.set(0, 0, 0);
+            cube.rotation.set(0.5, 0 , 0);
+            scene.add(cube);
+
+            // render the scene
+            renderer.render(scene, camera);
+        }
+
+        // call the main() function to initiate the scene
+        main();
+    </script>
+</body>
+</html>
