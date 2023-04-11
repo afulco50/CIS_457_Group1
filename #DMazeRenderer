@@ -22,8 +22,19 @@
         // Global Variables - cube or geometric object
         const geometry = new THREE.BoxGeometry(2, 2, 1);
         const material = new THREE.MeshPhongMaterial({color: 'purple'});
-        const cube = new THREE.Mesh(geometry, material);
+        const playerMaterial = new THREE.MeshPhongMaterial({color: 'yellow'});
+        //const cube = new THREE.Mesh(geometry, material);
 
+
+        // Create a sphere geometry
+        //const playerGeometry = new THREE.SphereGeometry(1, 32, 32);
+
+        // Create a material for the sphere
+        //const playerMaterial = new THREE.MeshBasicMaterial({
+        //  map: new THREE.TextureLoader().load('images/pacman_image.png'),
+        //  side: THREE.DoubleSide
+        //});
+        
         // Main function
         function main() 
         {
@@ -32,24 +43,29 @@
 
             const maze = 
             [
-              [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-              [1, 1, 0, 1, 0, 1, 0, 1, 0, 1],
-              [1, 0, 0, 0, 1, 0, 0, 0, 0, 1],
-              [1, 1, 0, 1, 0, 1, 0, 1, 0, 1],
-              [1, 0, 0, 0, 1, 1, 0, 0, 1, 1],
-              [1, 1, 0, 0, 0, 0, 0, 1, 0, 1],
-              [1, 0, 1, 0, 1, 0, 1, 0, 1, 1],
-              [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-              [1, 0, 1, 0, 1, 0, 1, 0, 0, 1],
-              [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+              [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+              [1, 0, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1],
+              [1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1],
+              [1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 0, 0, 1],
+              [1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 0, 0, 1],
+              [1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1],
+              [1, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1],
+              [1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+              [1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1],
+              [1, 1, 1, 0, 0, 1, 1, 1, 0, 0, 1, 0, 0, 1],
+              [1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+              [1, 1, 0, 1, 0, 1, 1, 1, 0, 0, 1, 0, 0, 1],
+              [1, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1, 0, 0, 1],
+              [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
             ];
 
-
-
+            //sets inital coords for maze generation
+            const numColumns = maze[0].length;
+            var xcoord = -numColumns + 4;
 
             //adds eventListener to arrow keys to allow player 
             document.addEventListener('keydown', onKeyDown);
-            const playerLocation = new THREE.Vector3();
+            const playerLocation = new THREE.Vector3(-numColumns + 6, -2, 0);
 
             //adjust the playerLocation vector according to the arrow keys being clicked
             function onKeyDown(event) 
@@ -57,20 +73,29 @@
               switch (event.key) 
               {
                 case 'ArrowUp':
-                  playerLocation.y += 0.1;
-                  console.log("Up")
+                  //if(maze[playerLocation.x][playerLocation.y + 2] == 0)
+                  playerLocation.y += 2;
+                  //console.log(`Up --> PlayerLocation now (${playerLocation.x}, ${playerLocation.y})`);
+                  console.log(`Up --> material is now (color: ${material.color.r}, ${material.color.g}, ${material.color.b}, emissive: ${material.emissive.r}, ${material.emissive.g}, ${material.emissive.b}) and specular: ${material.specular.r}, ${material.specular.g}, ${material.specular.b}`);
+                  main();
                   break;
                 case 'ArrowDown':
-                  playerLocation.y -= 0.1;
-                  console.log("Down")
+                  //if(maze[playerLocation.x][playerLocation.y - 2] == 0)
+                  playerLocation.y -= 2;
+                  console.log(`Down --> PlayerLocation now (${playerLocation.x}, ${playerLocation.y})`);
+                  main();
                   break;
                 case 'ArrowLeft':
-                  playerLocation.x -= 0.1;
-                  console.log("Left")
+                  //if(maze[playerLocation.x - 2][playerLocation.y] == 0)
+                  playerLocation.x -= 2;
+                  console.log(`Left --> PlayerLocation now (${playerLocation.x}, ${playerLocation.y})`);
+                  main();
                   break;
                 case 'ArrowRight':
-                  playerLocation.x += 0.1;
-                  console.log("Right")
+                  //if(maze[playerLocation.x  2][playerLocation.y] == 0)
+                  playerLocation.x += 2;
+                  console.log(`Right --> PlayerLocation now (${playerLocation.x}, ${playerLocation.y})`);
+                  main();
                   break;
               }
             }
@@ -83,7 +108,7 @@
                 camera.position.add(playerLocation);
 
                 renderer.render(scene, camera);
-              }
+            }
 
 
             // add scene background color, set rendering size,
@@ -100,10 +125,6 @@
             const light = new THREE.HemisphereLight('#FFFFFF', '#757575', 1.7);
             scene.add(light);
 
-            //sets inital coords for maze generation
-            const numColumns = maze[0].length;
-            var xcoord = -numColumns + 8;
-
             //iterates over 2D array to generate initial maze layout
             for (let i = 0; i < maze.length; i++) 
             {
@@ -114,22 +135,28 @@
                     if (maze[i][j] === 1) 
                     {
                         //create a cube at the given indices coordinates
-                        const cube = new THREE.Mesh(geometry, material);
-                        cube.position.set(xcoord, j * 2, 0);
-                        scene.add(cube);
+                        const wallCube = new THREE.Mesh(geometry, material);
+                        wallCube.position.set(xcoord, -4 + (j * 2), 0);
+                        scene.add(wallCube);
 
-                        console.log(`Cube placed at (${xcoord}, 0, ${j*2})`);
+                        //console.log(`Cube placed at (${xcoord}, 0, ${-4+(j*2)})`);
+                    }
+                    else //space is open
+                    {
+                        //creates cube to represent player location in the maze
+                        
+                        if(xcoord == playerLocation.x && (-4 + (j * 2)) == playerLocation.y)
+                        {
+                            const playerCube = new THREE.Mesh(geometry, playerMaterial);
+                            playerCube.position.set(xcoord, -4 + (j * 2), 0);
+                            scene.add(playerCube);
+                        }
                     }
                 }
 
                 //increments xcoord 2 units (moving right)
                 xcoord += 2;
             }
-
-            // set initial cube position, rotation, and add to scene
-            cube.position.set(0, 0, 0);
-            cube.rotation.set(0.5, 0 , 0);
-            scene.add(cube);
 
             // render the scene
             renderer.render(scene, camera);
