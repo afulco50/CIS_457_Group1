@@ -64,38 +64,57 @@
             var xcoord = -numColumns + 4;
 
             //adds eventListener to arrow keys to allow player 
-            document.addEventListener('keydown', onKeyDown);
-            const playerLocation = new THREE.Vector3(-numColumns + 6, -2, 0);
+            window.addEventListener('keydown', onKeyDown);
+            var playerLocation = new THREE.Vector3(-numColumns + 6, -2, 0);
+			const playerCube = new THREE.Mesh(geometry, playerMaterial);
 
             //adjust the playerLocation vector according to the arrow keys being clicked
             function onKeyDown(event) 
             {
+			  //prevents default function of arrow keys (aka, scrolling)
+			  event.preventDefault();
+			  
+			  //stops keydown from firing constantly while held?
+			  //if (event.repeat){return};
               switch (event.key) 
               {
                 case 'ArrowUp':
                   //if(maze[playerLocation.x][playerLocation.y + 2] == 0)
                   playerLocation.y += 2;
-                  //console.log(`Up --> PlayerLocation now (${playerLocation.x}, ${playerLocation.y})`);
-                  console.log(`Up --> material is now (color: ${material.color.r}, ${material.color.g}, ${material.color.b}, emissive: ${material.emissive.r}, ${material.emissive.g}, ${material.emissive.b}) and specular: ${material.specular.r}, ${material.specular.g}, ${material.specular.b}`);
-                  main();
+				  
+				  playerCube.position.set(playerLocation);
+				  buildMaze();
+				  renderer.render(scene, camera);
+                  console.log(`Up --> PlayerLocation now (${playerLocation.x}, ${playerLocation.y})`);
+                  //console.log(`Up --> material is now (color: ${material.color.r}, ${material.color.g}, ${material.color.b}, emissive: ${material.emissive.r}, ${material.emissive.g}, ${material.emissive.b}) and specular: ${material.specular.r}, ${material.specular.g}, ${material.specular.b}`);
+                  //main();
                   break;
                 case 'ArrowDown':
                   //if(maze[playerLocation.x][playerLocation.y - 2] == 0)
                   playerLocation.y -= 2;
+				  playerCube.position.set(playerLocation);
+				  buildMaze();
+				  renderer.render(scene, camera);
                   console.log(`Down --> PlayerLocation now (${playerLocation.x}, ${playerLocation.y})`);
-                  main();
+                  //main();
                   break;
                 case 'ArrowLeft':
                   //if(maze[playerLocation.x - 2][playerLocation.y] == 0)
                   playerLocation.x -= 2;
+				  playerCube.position.set(playerLocation);
+				  buildMaze();
+				  renderer.render(scene, camera);
                   console.log(`Left --> PlayerLocation now (${playerLocation.x}, ${playerLocation.y})`);
-                  main();
+                  //main();
                   break;
                 case 'ArrowRight':
                   //if(maze[playerLocation.x  2][playerLocation.y] == 0)
                   playerLocation.x += 2;
+				  playerCube.position.set(playerLocation);
+				  buildMaze();
+				  renderer.render(scene, camera);
                   console.log(`Right --> PlayerLocation now (${playerLocation.x}, ${playerLocation.y})`);
-                  main();
+                  //main();
                   break;
               }
             }
@@ -126,6 +145,7 @@
             scene.add(light);
 
             //iterates over 2D array to generate initial maze layout
+			function buildMaze(){
             for (let i = 0; i < maze.length; i++) 
             {
                 //iterates through all items in that column and generates cubes where needed
@@ -147,7 +167,7 @@
                         
                         if(xcoord == playerLocation.x && (-4 + (j * 2)) == playerLocation.y)
                         {
-                            const playerCube = new THREE.Mesh(geometry, playerMaterial);
+                            
                             playerCube.position.set(xcoord, -4 + (j * 2), 0);
                             scene.add(playerCube);
                         }
@@ -157,7 +177,9 @@
                 //increments xcoord 2 units (moving right)
                 xcoord += 2;
             }
-
+			xcoord = -numColumns + 4;
+}
+			buildMaze();
             // render the scene
             renderer.render(scene, camera);
         }
