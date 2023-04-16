@@ -21,26 +21,46 @@
 
         // Global Variables - cube or geometric object
         const geometry = new THREE.BoxGeometry(2, 2, 1);
+        const backgroundGeometry = new THREE.BoxGeometry(2, 2, .1);
         const material = new THREE.MeshPhongMaterial({color: 'purple'});
         const playerMaterial = new THREE.MeshPhongMaterial({color: 'yellow'});
+        const backgroundMaterial = new THREE.MeshPhongMaterial({color: 'gray'});
         //const cube = new THREE.Mesh(geometry, material);
-
 
         // Create a sphere geometry
         //const playerGeometry = new THREE.SphereGeometry(1, 32, 32);
 
-        // Create a material for the sphere
-        //const playerMaterial = new THREE.MeshBasicMaterial({
-        //  map: new THREE.TextureLoader().load('images/pacman_image.png'),
-        //  side: THREE.DoubleSide
-        //});
-        
+        //defines variables needed for creating a custom design (checkered flag)
+        const size = 512;
+        const canvas = document.createElement('canvas');
+        canvas.width = size;
+        canvas.height = size;
+        const context = canvas.getContext('2d');
+
+        //creates a checkered flag pattern for the endpoint material object
+        const white = '#ffffff';
+        const black = '#000000';
+        const width = size / 5; // double the square size
+        for (let y = 0; y < size; y += width * 2) 
+        {
+            for (let x = 0; x < size; x += width * 2) 
+            {
+                context.fillStyle = black;
+                context.fillRect(x, y, width, width);
+                context.fillRect(x + width, y + width, width, width);
+                context.fillStyle = white;
+                context.fillRect(x + width, y, width, width);
+                context.fillRect(x, y + width, width, width);
+            }
+        }
+
+        // Create texture using canvas object, then creates checkered flag material to use on the endpoint cube/object
+        const texture = new THREE.CanvasTexture(canvas);
+        const endpointMaterial = new THREE.MeshBasicMaterial({ map: texture });
+
         // Main function
         function main() 
         {
-            // remove the default canvas on web page (output)
-            //document.querySelector('canvas').remove();
-
             //for testing
             const maze = 
             [
@@ -72,6 +92,12 @@
             //establish player's inital spot in the maze array as a 3D vector
             //var playerLocationInMaze = new THREE.Vector3(1, maze[0].length - 2, 0);
             var playerLocationInMaze = new THREE.Vector3(1, 1, 0);
+
+            //adds cube object to represent endpoint
+            const endpointCube = new THREE.Mesh(geometry, endpointMaterial);
+
+            //adds flat object to represent normal backdrop piece
+            const backdropObject = new THREE.Mesh(backgroundGeometry, backgroundMaterial);
 
             //adjust the playerLocation vector according to the arrow keys being clicked
             function onKeyDown(event) 
@@ -142,64 +168,97 @@
               }
             }
 
+            //render function
             function render() 
             {
                 requestAnimationFrame(render);
 
-                // Update camera position based on velocity
+                //Update camera position based on velocity
                 camera.position.add(playerLocation);
 
+                //use renderer to render scene
                 renderer.render(scene, camera);
             }
 
 
-            // add scene background color, set rendering size,
-            // and add to DOM on web page (output)
+            //add scene background color, set rendering size, and add to DOM on web page (output)
             scene.background = new THREE.Color('#161718');
             renderer.setSize(window.innerWidth, window.innerHeight);
             document.body.appendChild(renderer.domElement);
 
-            // reposition or transform camera
-            //camera.position.set(0, 0, 5);
+            //reposition camera
             camera.position.set(5, 7, 7);
 
-            // create world light and add to scene
+            //create scene lighting and add to scene
             const light = new THREE.HemisphereLight('#FFFFFF', '#757575', 1.7);
             scene.add(light);
 
             //iterates over 2D array to generate initial maze layout
-            function buildMaze(){
-            for (let i = 0; i < maze.length; i++) 
+            function buildMaze()
             {
-                //iterates through all items in that column and generates cubes where needed
-                for (let j = 0; j < maze[i].length; j++) 
+                for (let i = 0; i < maze.length; i++) 
                 {
-                    //maze block detected
-                    if (maze[i][j] === 1) 
+                    //iterates through all items in that column and generates cubes where needed
+                    for (let j = 0; j < maze[i].length; j++) 
                     {
-                        //create a cube at the given indices coordinates
-                        const wallCube = new THREE.Mesh(geometry, material);
-                        wallCube.position.set(xcoord, -4 + (j * 2), 0);
-                        scene.add(wallCube);
-
-                        //console.log(`Cube placed at (${xcoord}, 0, ${-4+(j*2)})`);
-                    }
-                    else //space is open
-                    {
-                        //creates cube to represent player location in the maze
-                        if(xcoord == playerLocation.x && (-4 + (j * 2)) == playerLocation.y)
+                        //maze block detected
+                        if (maze[i][j] === 1) 
                         {
-                            playerCube.position.set(xcoord, -4 + (j * 2), 0);
-                            scene.add(playerCube);
+                            //create a cube at the given indices coordinates
+                            const wallCube = new THREE.Mesh(geometry, material);
+                            wallCube.position.set(xcoord, -4 + (j * 2), 0);
+                            scene.add(wallCube);
+                        }
+                        else //space is open
+                        {
+                            //creates cube to represent player location in the maze
+                            if(xcoord == playerLocation.x && (-4 + (j * 2)) == playerLocation.y)
+                            {
+                                playerCube.position.set(xcoord, -4 + (j * 2), 0);
+                                scene.add(playerCube);
+                            }
                         }
                     }
+
+                    //increments xcoord 2 units (moving right)
+                    xcoord += 2;
+                }
+                
+                //resets xcoord
+                xcoord = -numColumns + 4;
+
+                //loop to draw background walls and the endpoint behind the maze itself
+                for (let i = 0; i < maze.length; i++) 
+                {
+                    //iterates through all items in that column and generates cubes where needed
+                    for (let j = 0; j < maze[i].length; j++) 
+                    {
+                        //endpoint block detected
+                        if (i == (maze[0].length - 2) && j == (maze[0].length - 2)) 
+                        {
+                            //create an object at the given indices coordinates
+                            const endpointObject = new THREE.Mesh(backgroundGeometry, endpointMaterial);
+                            endpointObject.position.set(xcoord, -4 + (j * 2), 0);
+                            scene.add(endpointObject);
+
+                            //console.log(`Cube placed at (${xcoord}, 0, ${-4+(j*2)})`);
+                        }
+                        else //space is open
+                        {
+                            //create a object at the given indices coordinates
+                            const backgroundObject = new THREE.Mesh(backgroundGeometry, backgroundMaterial);
+                            backgroundObject.position.set(xcoord, -4 + (j * 2), 0);
+                            scene.add(backgroundObject);
+                        }
+                    }
+
+                    //increments xcoord 2 units (moving right)
+                    xcoord += 2;
                 }
 
-                //increments xcoord 2 units (moving right)
-                xcoord += 2;
+                //resets xcoord
+                xcoord = -numColumns + 4;
             }
-            xcoord = -numColumns + 4;
-}
             buildMaze();
             // render the scene
             renderer.render(scene, camera);
