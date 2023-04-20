@@ -58,10 +58,158 @@
         const texture = new THREE.CanvasTexture(canvas);
         const endpointMaterial = new THREE.MeshBasicMaterial({ map: texture });
 
+        //function to choose the layout for the maze from predefined options
+        function pickMazeLayout()
+        {
+            //declare array to house the list of options for the maze layout
+            var layoutOptions = [];
+
+            //declares placeholder for variable to append to layoutOptions
+            var appendableVariable = [];
+
+            //declares option 1
+            appendableVariable = 
+            [
+              [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+              [1, 0, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1],   //top left of maze
+              [1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1],
+              [1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 0, 0, 1],
+              [1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 0, 0, 1],
+              [1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1],
+              [1, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1],
+              [1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+              [1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1],
+              [1, 1, 1, 0, 0, 1, 1, 1, 0, 0, 1, 0, 0, 1],
+              [1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+              [1, 1, 0, 1, 0, 1, 1, 1, 0, 0, 1, 0, 0, 1],
+              [1, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1, 0, 0, 1],   //top right of maze
+              [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+            ];
+
+            //populate array with option 1
+            layoutOptions.push(appendableVariable);
+
+            //declares option 2
+            appendableVariable = 
+            [
+              [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+              [1, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1],   //top left of maze
+              [1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1],
+              [1, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 0, 0, 1],
+              [1, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1],
+              [1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1],
+              [1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1],
+              [1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+              [1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1],
+              [1, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1, 0, 0, 1],
+              [1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+              [1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 0, 1],
+              [1, 1, 1, 0, 0, 1, 1, 1, 0, 0, 1, 0, 0, 1],   //top right of maze
+              [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+            ];
+
+            //populate array with option 2
+            layoutOptions.push(appendableVariable);
+
+            //declares option 3
+            appendableVariable = 
+            [
+              [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+              [1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 0, 1, 1],   //top left of maze
+              [1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1],
+              [1, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 0, 1, 1],
+              [1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
+              [1, 0, 1, 1, 1, 0, 0, 1, 1, 0, 1, 1, 1, 1],
+              [1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1],
+              [1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+              [1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1],
+              [1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 1, 0, 0, 1],
+              [1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1],
+              [1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 0, 1],
+              [1, 1, 0, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1],   //top right of maze
+              [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+            ];
+
+            //populate array with option 3
+            layoutOptions.push(appendableVariable);
+
+            //declares option 3
+            appendableVariable = 
+            [
+              [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+              [1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 0, 1, 1],   //top left of maze
+              [1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1],
+              [1, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 0, 1, 1],
+              [1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
+              [1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 1, 1, 1, 1],
+              [1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1],
+              [1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+              [1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1],
+              [1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 1, 0, 0, 1],
+              [1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1],
+              [1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 0, 1],
+              [1, 1, 0, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1],   //top right of maze
+              [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+            ];
+
+            //populate array with option 3
+            layoutOptions.push(appendableVariable);
+
+            //declares option 4
+            appendableVariable = 
+            [
+              [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+              [1, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 1, 1],   //top left of maze
+              [1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 1],
+              [1, 0, 0, 0, 1, 1, 1, 0, 1, 1, 0, 0, 1, 1],
+              [1, 0, 1, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1],
+              [1, 0, 0, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1],
+              [1, 1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1],
+              [1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+              [1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1],
+              [1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 1, 0, 0, 1],
+              [1, 1, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 1],
+              [1, 0, 0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1],
+              [1, 1, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1],   //top right of maze
+              [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+            ];
+
+            //populate array with option 4
+            layoutOptions.push(appendableVariable);
+
+            //declares option 5
+            appendableVariable = 
+            [
+              [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+              [1, 0, 1, 1, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1],   //top left of maze
+              [1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1],
+              [1, 0, 0, 0, 1, 0, 1, 0, 1, 1, 0, 0, 1, 1],
+              [1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1],
+              [1, 1, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 0, 1],
+              [1, 1, 0, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1],
+              [1, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1],
+              [1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1],
+              [1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1],
+              [1, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1],
+              [1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 1],
+              [1, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1],   //top right of maze
+              [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+            ];
+
+            //populate array with option 5
+            layoutOptions.push(appendableVariable);
+
+            //chooses option for maze layout
+            const indexSelection = Math.floor(Math.random() * 5);
+
+            return layoutOptions[indexSelection];
+        }
+
         // Main function
         function main() 
         {
             //for testing
+            /*
             const maze = 
             [
               [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
@@ -79,6 +227,10 @@
               [1, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1, 0, 0, 1],   //top right of maze
               [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
             ];
+            */
+
+            //defines maze layout for use later in the program
+            const maze = pickMazeLayout();
 
             //sets inital coords for maze generation
             const numColumns = maze[0].length;
