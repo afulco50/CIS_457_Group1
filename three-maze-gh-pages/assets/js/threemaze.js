@@ -165,7 +165,7 @@
 
         // Init collectibles
         for (var collectible of collectibles) {
-            var coin_geometry = new THREE.CylinderGeometry(5, 5, 20, 32);
+            var coin_geometry = new THREE.CylinderGeometry(5, 5, 10, 32);
 
             let x = collectible.x;
             let y = collectible.y;
@@ -177,7 +177,7 @@
             new_map[x][y].name = "collectible";
             new_map[x][y].position.set(
                 x * this.thickness - (this.side * this.thickness) / 2,
-                0,
+                10,
                 y * 20 - (this.side * this.thickness) / 2
             );
             this.scene.add(new_map[x][y]);
