@@ -47,6 +47,11 @@
         var latency = 50;
         var self = this;
         var tween = null;
+
+        // Reset the scoreboard
+        let el = document.getElementById("score-value");
+        el.innerHTML = 0;
+
         for (var x = this.side; x > 0; x -= 1) {
             new_player_path[x] = [];
             for (var y = 1; y < this.side + 1; y += 1) {
@@ -408,6 +413,10 @@
         else if (target_block.name === "collectible") {
             this.scene.remove(this.map[x + direction.x][z + direction.z]);
             this.map[x + direction.x][z + direction.z] = false;
+
+            // Increment the score
+            let el = document.getElementById("score-value");
+            el.innerHTML = parseInt(el.innerHTML) + 1;
 
             // Builds the mesh
             this.player.path[x][z] = new THREE.Mesh(
