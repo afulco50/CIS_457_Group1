@@ -1,0 +1,612 @@
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <title>3D Cube</title>
+        <style>
+            #score {
+                position: absolute;
+                color: #bcbcbc;
+                left: 32px;
+                font-size: 32px;
+                font-family: sans-serif;
+            }
+
+            canvas {
+                position: absolute;
+                left: 0;
+                top: 0;
+                z-index: -2;
+            }
+
+            body {
+                overflow: hidden;
+            }
+        </style>
+    </head>
+    <body>
+        <script type="module">
+            //imports Three.js
+            import * as THREE from "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.module.js";
+
+            // Global 3D Variables for add scene, camera, renderer, and world light functions
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(
+                150,
+                window.innerWidth / window.innerHeight,
+                0.1,
+                1000
+            );
+            const renderer = new THREE.WebGLRenderer();
+
+            //resize canvas of maze generator to dynamically match broswer window size
+            window.addEventListener("resize", () => {
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+
+            // Global Variables - cube or geometric object
+            const geometry = new THREE.BoxGeometry(2, 2, 1);
+            const backgroundGeometry = new THREE.BoxGeometry(2, 2, 0.1);
+            const material = new THREE.MeshPhongMaterial({ color: "purple" });
+            const materialGreen = new THREE.MeshPhongMaterial({
+                color: "green",
+            });
+            const playerMaterial = new THREE.MeshPhongMaterial({
+                color: "yellow",
+            });
+            const backgroundMaterial = new THREE.MeshPhongMaterial({
+                color: "gray",
+            });
+            //const cube = new THREE.Mesh(geometry, material);
+
+            // Create a sphere geometry
+            //const playerGeometry = new THREE.SphereGeometry(1, 32, 32);
+
+            //defines variables needed for creating a custom design (checkered flag)
+            const size = 512;
+            const canvas = document.createElement("canvas");
+            canvas.width = size;
+            canvas.height = size;
+            const context = canvas.getContext("2d");
+
+            //creates a checkered flag pattern for the endpoint material object
+            const white = "#ffffff";
+            const black = "#000000";
+            const width = size / 5; // double the square size
+            for (let y = 0; y < size; y += width * 2) {
+                for (let x = 0; x < size; x += width * 2) {
+                    context.fillStyle = black;
+                    context.fillRect(x, y, width, width);
+                    context.fillRect(x + width, y + width, width, width);
+                    context.fillStyle = white;
+                    context.fillRect(x + width, y, width, width);
+                    context.fillRect(x, y + width, width, width);
+                }
+            }
+
+            // Create texture using canvas object, then creates checkered flag material to use on the endpoint cube/object
+            const texture = new THREE.CanvasTexture(canvas);
+            const endpointMaterial = new THREE.MeshBasicMaterial({
+                map: texture,
+            });
+
+            //function to choose the layout for the maze from predefined options
+            function pickMazeLayout() {
+                //declare array to house the list of options for the maze layout
+                var layoutOptions = [];
+
+                //declares placeholder for variable to append to layoutOptions
+                var appendableVariable = [];
+
+                //declares option 1
+                appendableVariable = [
+                    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                    [1, 0, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1], //top left of maze
+                    [1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1],
+                    [1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 0, 0, 1],
+                    [1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 0, 2, 1],
+                    [1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1],
+                    [1, 2, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1],
+                    [1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+                    [1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1],
+                    [1, 1, 1, 0, 0, 1, 1, 1, 0, 0, 1, 0, 0, 1],
+                    [1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+                    [1, 1, 0, 1, 0, 1, 1, 1, 0, 0, 1, 0, 0, 1],
+                    [1, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1, 0, 0, 1], //top right of maze
+                    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                ];
+
+                //populate array with option 1
+                layoutOptions.push(appendableVariable);
+
+                //declares option 2
+                appendableVariable = [
+                    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                    [1, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1], //top left of maze
+                    [1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1],
+                    [1, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 0, 0, 1],
+                    [1, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1],
+                    [1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1],
+                    [1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1],
+                    [1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+                    [1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1],
+                    [1, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1, 0, 0, 1],
+                    [1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+                    [1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 0, 1],
+                    [1, 1, 1, 2, 0, 1, 1, 1, 0, 0, 1, 0, 0, 1], //top right of maze
+                    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                ];
+
+                //populate array with option 2
+                layoutOptions.push(appendableVariable);
+
+                //declares option 3
+                appendableVariable = [
+                    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                    [1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 0, 1, 1], //top left of maze
+                    [1, 1, 1, 2, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1],
+                    [1, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 0, 1, 1],
+                    [1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
+                    [1, 0, 1, 1, 1, 0, 0, 1, 1, 0, 1, 1, 1, 1],
+                    [1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1],
+                    [1, 0, 0, 0, 1, 0, 0, 0, 2, 0, 0, 0, 0, 1],
+                    [1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1],
+                    [1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 1, 0, 0, 1],
+                    [1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1],
+                    [1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 0, 1],
+                    [1, 1, 0, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1], //top right of maze
+                    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                ];
+
+                //populate array with option 3
+                layoutOptions.push(appendableVariable);
+
+                //declares option 3
+                appendableVariable = [
+                    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                    [1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 0, 1, 1], //top left of maze
+                    [1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1],
+                    [1, 0, 0, 0, 0, 1, 2, 1, 1, 1, 1, 0, 1, 1],
+                    [1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
+                    [1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 1, 1, 1, 1],
+                    [1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1],
+                    [1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+                    [1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1],
+                    [1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 1, 0, 0, 1],
+                    [1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1],
+                    [1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 2, 1],
+                    [1, 1, 0, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1], //top right of maze
+                    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                ];
+
+                //populate array with option 3
+                layoutOptions.push(appendableVariable);
+
+                //declares option 4
+                appendableVariable = [
+                    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                    [1, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 1, 1], //top left of maze
+                    [1, 0, 1, 2, 1, 0, 0, 0, 0, 1, 0, 0, 1, 1],
+                    [1, 0, 0, 0, 1, 1, 1, 0, 1, 1, 0, 0, 1, 1],
+                    [1, 0, 1, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1],
+                    [1, 0, 0, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1],
+                    [1, 1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1],
+                    [1, 0, 0, 0, 1, 0, 0, 0, 0, 2, 0, 0, 0, 1],
+                    [1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1],
+                    [1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 1, 0, 0, 1],
+                    [1, 1, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 1],
+                    [1, 0, 0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1],
+                    [1, 1, 0, 1, 0, 0, 0, 1, 1, 2, 0, 0, 0, 1], //top right of maze
+                    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                ];
+
+                //populate array with option 4
+                layoutOptions.push(appendableVariable);
+
+                //declares option 5
+                appendableVariable = [
+                    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                    [1, 0, 1, 1, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1], //top left of maze
+                    [1, 2, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1],
+                    [1, 0, 0, 0, 1, 0, 1, 0, 1, 1, 0, 2, 1, 1],
+                    [1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1],
+                    [1, 1, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 0, 1],
+                    [1, 1, 0, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1],
+                    [1, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1],
+                    [1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1],
+                    [1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1],
+                    [1, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1],
+                    [1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 1],
+                    [1, 0, 1, 1, 0, 0, 1, 1, 0, 0, 2, 0, 0, 1], //top right of maze
+                    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                ];
+
+                //populate array with option 5
+                layoutOptions.push(appendableVariable);
+
+                //chooses option for maze layout
+                const indexSelection = Math.floor(Math.random() * 5);
+
+                return layoutOptions[indexSelection];
+            }
+
+            // Main function
+            function main() {
+                //for testing
+                /*
+            const maze =
+            [
+              [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+              [1, 0, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1],   //top left of maze
+              [1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1],
+              [1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 0, 0, 1],
+              [1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 0, 0, 1],
+              [1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1],
+              [1, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1],
+              [1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+              [1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1],
+              [1, 1, 1, 0, 0, 1, 1, 1, 0, 0, 1, 0, 0, 1],
+              [1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+              [1, 1, 0, 1, 0, 1, 1, 1, 0, 0, 1, 0, 0, 1],
+              [1, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1, 0, 0, 1],   //top right of maze
+              [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+            ];
+            */
+
+                //defines maze layout for use later in the program
+                const maze = pickMazeLayout();
+
+                //sets inital coords for maze generation
+                const numColumns = maze[0].length;
+                var xcoord = -numColumns + 4;
+
+                //adds eventListener to arrow keys to allow player
+                window.addEventListener("keydown", onKeyDown);
+                var playerLocation = new THREE.Vector3(-numColumns + 6, -2, 0);
+                const playerCube = new THREE.Mesh(geometry, playerMaterial);
+
+                //establish player's inital spot in the maze array as a 3D vector
+                //var playerLocationInMaze = new THREE.Vector3(1, maze[0].length - 2, 0);
+                var playerLocationInMaze = new THREE.Vector3(1, 1, 0);
+
+                //adds cube object to represent endpoint
+                const endpointCube = new THREE.Mesh(geometry, endpointMaterial);
+
+                //adds flat object to represent normal backdrop piece
+                const backdropObject = new THREE.Mesh(
+                    backgroundGeometry,
+                    backgroundMaterial
+                );
+
+                //adjust the playerLocation vector according to the arrow keys being clicked
+                function onKeyDown(event) {
+                    //prevents default function of arrow keys (scrolling the page)
+                    event.preventDefault();
+
+                    //cases of which arrow key was pressed
+                    switch (event.key) {
+                        case "ArrowUp":
+                            //console.log(`Up --> Maze index is ${playerLocationInMaze.y + 1}`);
+                            //console.log(`Up --> Other  index is ${playerLocation.y + 1}`);
+                            if (
+                                maze[playerLocationInMaze.x][
+                                    playerLocationInMaze.y + 1
+                                ] == 0 ||
+                                maze[playerLocationInMaze.x][
+                                    playerLocationInMaze.y + 1
+                                ] == 2
+                            ) {
+                                //&& (playerLocation.y + 1) <= maze[0].length - 1)
+                                //console.log(`Inside Up If`);
+                                playerLocation.y += 2;
+                                playerLocationInMaze.y += 1;
+                            }
+
+                            // Is collectible
+                            if (
+                                maze[playerLocationInMaze.x][
+                                    playerLocationInMaze.y
+                                ] == 2
+                            ) {
+                                maze[playerLocationInMaze.x][
+                                    playerLocationInMaze.y
+                                ] = 0;
+                                scene.remove(
+                                    scene.getObjectByName(
+                                        playerLocationInMaze.x +
+                                            "" +
+                                            playerLocationInMaze.y
+                                    )
+                                );
+
+                                let scoreEl =
+                                    document.getElementById("score-value");
+                                scoreEl.innerHTML =
+                                    parseInt(scoreEl.innerHTML) + 1;
+                            }
+
+                            playerCube.position.set(playerLocation);
+                            buildMaze();
+                            renderer.render(scene, camera);
+                            break;
+                        case "ArrowDown":
+                            //console.log(`Down --> Maze index is ${playerLocationInMaze.y - 1}`);
+                            //console.log(`Down --> Other  index is ${playerLocation.y - 1}`);
+                            if (
+                                maze[playerLocationInMaze.x][
+                                    playerLocationInMaze.y - 1
+                                ] == 0 ||
+                                maze[playerLocationInMaze.x][
+                                    playerLocationInMaze.y - 1
+                                ] == 2
+                            ) {
+                                //&& (playerLocation.y - 1) >= 1)
+                                //console.log(`Inside Down If`);
+                                playerLocation.y -= 2;
+                                playerLocationInMaze.y -= 1;
+                            }
+
+                            // Is collectible
+                            if (
+                                maze[playerLocationInMaze.x][
+                                    playerLocationInMaze.y
+                                ] == 2
+                            ) {
+                                maze[playerLocationInMaze.x][
+                                    playerLocationInMaze.y
+                                ] = 0;
+                                scene.remove(
+                                    scene.getObjectByName(
+                                        playerLocationInMaze.x +
+                                            "" +
+                                            playerLocationInMaze.y
+                                    )
+                                );
+
+                                let scoreEl =
+                                    document.getElementById("score-value");
+                                scoreEl.innerHTML =
+                                    parseInt(scoreEl.innerHTML) + 1;
+                            }
+
+                            playerCube.position.set(playerLocation);
+                            buildMaze();
+                            renderer.render(scene, camera);
+                            break;
+                        case "ArrowLeft":
+                            //console.log(`Left --> Maze index is ${playerLocationInMaze.x - 1}`);
+                            //console.log(`Left --> Other  index is ${playerLocation.x - 1}`);
+                            if (
+                                maze[playerLocationInMaze.x - 1][
+                                    playerLocationInMaze.y
+                                ] == 0 ||
+                                maze[playerLocationInMaze.x - 1][
+                                    playerLocationInMaze.y
+                                ] == 2
+                            ) {
+                                //&& (playerLocation.x - 2) >= 0)
+                                //console.log(`Inside Left If`);
+                                playerLocation.x -= 2;
+                                playerLocationInMaze.x -= 1;
+                            }
+
+                            // Is collectible
+                            if (
+                                maze[playerLocationInMaze.x][
+                                    playerLocationInMaze.y
+                                ] == 2
+                            ) {
+                                maze[playerLocationInMaze.x][
+                                    playerLocationInMaze.y
+                                ] = 0;
+                                scene.remove(
+                                    scene.getObjectByName(
+                                        playerLocationInMaze.x +
+                                            "" +
+                                            playerLocationInMaze.y
+                                    )
+                                );
+
+                                let scoreEl =
+                                    document.getElementById("score-value");
+                                scoreEl.innerHTML =
+                                    parseInt(scoreEl.innerHTML) + 1;
+                            }
+
+                            playerCube.position.set(playerLocation);
+                            buildMaze();
+                            renderer.render(scene, camera);
+                            break;
+                        case "ArrowRight":
+                            //console.log(`Right --> Maze index is ${playerLocationInMaze.y + 1}`);
+                            //console.log(`Right --> Other  index is ${playerLocation.y + 1}`);
+                            if (
+                                maze[playerLocationInMaze.x + 1][
+                                    playerLocationInMaze.y
+                                ] == 0 ||
+                                maze[playerLocationInMaze.x + 1][
+                                    playerLocationInMaze.y
+                                ] == 2
+                            ) {
+                                //&& (playerLocation.x + 2) <= maze.length)
+                                //console.log(`Inside Right If`);
+                                playerLocation.x += 2;
+                                playerLocationInMaze.x += 1;
+                            }
+
+                            // Is collectible
+                            if (
+                                maze[playerLocationInMaze.x][
+                                    playerLocationInMaze.y
+                                ] == 2
+                            ) {
+                                maze[playerLocationInMaze.x][
+                                    playerLocationInMaze.y
+                                ] = 0;
+                                scene.remove(
+                                    scene.getObjectByName(
+                                        playerLocationInMaze.x +
+                                            "" +
+                                            playerLocationInMaze.y
+                                    )
+                                );
+
+                                let scoreEl =
+                                    document.getElementById("score-value");
+                                scoreEl.innerHTML =
+                                    parseInt(scoreEl.innerHTML) + 1;
+                            }
+
+                            playerCube.position.set(playerLocation);
+                            buildMaze();
+                            renderer.render(scene, camera);
+                            //main();
+                            break;
+                    }
+                }
+
+                //render function
+                function render() {
+                    requestAnimationFrame(render);
+
+                    //Update camera position based on velocity
+                    camera.position.add(playerLocation);
+
+                    //use renderer to render scene
+                    renderer.render(scene, camera);
+                }
+
+                //add scene background color, set rendering size, and add to DOM on web page (output)
+                scene.background = new THREE.Color("#161718");
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                document.body.appendChild(renderer.domElement);
+
+                //reposition camera
+                camera.position.set(5, 7, 7);
+
+                //create scene lighting and add to scene
+                const light = new THREE.HemisphereLight(
+                    "#FFFFFF",
+                    "#757575",
+                    1.7
+                );
+                light.name = "light";
+                scene.add(light);
+
+                //iterates over 2D array to generate initial maze layout
+                function buildMaze(isInitial = false) {
+                    for (let i = 0; i < maze.length; i++) {
+                        //iterates through all items in that column and generates cubes where needed
+                        for (let j = 0; j < maze[i].length; j++) {
+                            //maze block detected
+                            if (maze[i][j] === 1) {
+                                //create a cube at the given indices coordinates
+                                const wallCube = new THREE.Mesh(
+                                    geometry,
+                                    material
+                                );
+                                wallCube.position.set(xcoord, -4 + j * 2, 0);
+                                if (isInitial) {
+                                    scene.add(wallCube);
+                                }
+                            } else if (maze[i][j] === 2) {
+                                var coin_geometry = new THREE.CylinderGeometry(
+                                    0.5,
+                                    0.7,
+                                    1,
+                                    32
+                                );
+                                const coin = new THREE.Mesh(
+                                    coin_geometry,
+                                    materialGreen
+                                );
+                                coin.rotation.set(Math.PI / 2, 0, 0);
+                                coin.position.set(xcoord, -4 + j * 2, 0);
+                                coin.name = i + "" + j;
+                                if (isInitial) {
+                                    scene.add(coin);
+                                }
+                            }
+                            //space is open
+                            else {
+                                //creates cube to represent player location in the maze
+                                if (
+                                    xcoord == playerLocation.x &&
+                                    -4 + j * 2 == playerLocation.y
+                                ) {
+                                    playerCube.position.set(
+                                        xcoord,
+                                        -4 + j * 2,
+                                        0
+                                    );
+                                    scene.add(playerCube);
+                                }
+                            }
+                        }
+
+                        //increments xcoord 2 units (moving right)
+                        xcoord += 2;
+                    }
+
+                    //resets xcoord
+                    xcoord = -numColumns + 4;
+
+                    //loop to draw background walls and the endpoint behind the maze itself
+                    for (let i = 0; i < maze.length; i++) {
+                        //iterates through all items in that column and generates cubes where needed
+                        for (let j = 0; j < maze[i].length; j++) {
+                            //endpoint block detected
+                            if (
+                                i == maze[0].length - 2 &&
+                                j == maze[0].length - 2
+                            ) {
+                                //create an object at the given indices coordinates
+                                const endpointObject = new THREE.Mesh(
+                                    backgroundGeometry,
+                                    endpointMaterial
+                                );
+                                endpointObject.position.set(
+                                    xcoord,
+                                    -4 + j * 2,
+                                    0
+                                );
+                                if (isInitial) {
+                                    scene.add(endpointObject);
+                                }
+
+                                //console.log(`Cube placed at (${xcoord}, 0, ${-4+(j*2)})`);
+                            } //space is open
+                            else {
+                                //create a object at the given indices coordinates
+                                const backgroundObject = new THREE.Mesh(
+                                    backgroundGeometry,
+                                    backgroundMaterial
+                                );
+                                backgroundObject.position.set(
+                                    xcoord,
+                                    -4 + j * 2,
+                                    0
+                                );
+                                if (isInitial) {
+                                    scene.add(backgroundObject);
+                                }
+                            }
+                        }
+
+                        //increments xcoord 2 units (moving right)
+                        xcoord += 2;
+                    }
+
+                    //resets xcoord
+                    xcoord = -numColumns + 4;
+                }
+                buildMaze(true);
+                // render the scene
+                renderer.render(scene, camera);
+            }
+
+            // call the main() function to initiate the scene
+            main();
+        </script>
+        <p id="score">Score: <span id="score-value">0</span></p>
+    </body>
+</html>
