@@ -263,6 +263,7 @@
                 window.addEventListener("keydown", onKeyDown);
                 var playerLocation = new THREE.Vector3(-numColumns + 6, -2, 0);
                 const playerCube = new THREE.Mesh(geometry, playerMaterial);
+				var isDone = 0; //will be set to 1 when game is finished
 
                 //establish player's inital spot in the maze array as a 3D vector
                 //var playerLocationInMaze = new THREE.Vector3(1, maze[0].length - 2, 0);
@@ -284,6 +285,9 @@
 
                     //cases of which arrow key was pressed
                     switch (event.key) {
+						case 'r':
+							if (isDone == 1) {location.reload();}; //reset page only if maze is done
+							break;
                         case "ArrowUp":
                             //console.log(`Up --> Maze index is ${playerLocationInMaze.y + 1}`);
                             //console.log(`Up --> Other  index is ${playerLocation.y + 1}`);
@@ -327,6 +331,15 @@
                             playerCube.position.set(playerLocation);
                             buildMaze();
                             renderer.render(scene, camera);
+							if (playerLocationInMaze.x == (maze[0].length - 2) && playerLocationInMaze.y == (maze[0].length - 2)){
+					isDone = 1;
+					var img = document.createElement("img");
+					img.src = 'images/victory.png'; //probably want something more appealing later...
+					img.width = window.innerWidth;
+					img.height = window.innerHeight;
+					document.body.insertBefore(img, document.body.firstChild);
+					setTimeout(function(){window.alert('You collected ' + parseInt(document.getElementById("score-value").innerHTML) + ' collectables!');},100); //Should insert actual number of collected items later
+				  }
                             break;
                         case "ArrowDown":
                             //console.log(`Down --> Maze index is ${playerLocationInMaze.y - 1}`);
@@ -371,6 +384,15 @@
                             playerCube.position.set(playerLocation);
                             buildMaze();
                             renderer.render(scene, camera);
+							if (playerLocationInMaze.x == (maze[0].length - 2) && playerLocationInMaze.y == (maze[0].length - 2)){
+					isDone = 1;
+					var img = document.createElement("img");
+					img.src = 'images/victory.png'; //probably want something more appealing later...
+					img.width = window.innerWidth;
+					img.height = window.innerHeight;
+					document.body.insertBefore(img, document.body.firstChild);
+					setTimeout(function(){window.alert('You collected ' + parseInt(document.getElementById("score-value").innerHTML) + ' collectables!');},100); //Should insert actual number of collected items later
+				  }
                             break;
                         case "ArrowLeft":
                             //console.log(`Left --> Maze index is ${playerLocationInMaze.x - 1}`);
@@ -415,6 +437,15 @@
                             playerCube.position.set(playerLocation);
                             buildMaze();
                             renderer.render(scene, camera);
+							if (playerLocationInMaze.x == (maze[0].length - 2) && playerLocationInMaze.y == (maze[0].length - 2)){
+					isDone = 1;
+					var img = document.createElement("img");
+					img.src = 'images/victory.png'; //probably want something more appealing later...
+					img.width = window.innerWidth;
+					img.height = window.innerHeight;
+					document.body.insertBefore(img, document.body.firstChild);
+					setTimeout(function(){window.alert('You collected ' + parseInt(document.getElementById("score-value").innerHTML) + ' collectables!');},100); //Should insert actual number of collected items later
+				  }
                             break;
                         case "ArrowRight":
                             //console.log(`Right --> Maze index is ${playerLocationInMaze.y + 1}`);
@@ -459,6 +490,15 @@
                             playerCube.position.set(playerLocation);
                             buildMaze();
                             renderer.render(scene, camera);
+							if (playerLocationInMaze.x == (maze[0].length - 2) && playerLocationInMaze.y == (maze[0].length - 2)){
+					isDone = 1;
+					var img = document.createElement("img");
+					img.src = 'images/victory.png'; //probably want something more appealing later...
+					img.width = window.innerWidth;
+					img.height = window.innerHeight;
+					document.body.insertBefore(img, document.body.firstChild);
+					setTimeout(function(){window.alert('You collected ' + parseInt(document.getElementById("score-value").innerHTML) + ' collectables!');},100); //Should insert actual number of collected items later
+				  }
                             //main();
                             break;
                     }
